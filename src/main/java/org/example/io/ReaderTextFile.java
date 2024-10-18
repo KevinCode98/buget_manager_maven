@@ -1,8 +1,7 @@
-package budget.io;
+package org.example.io;
 
-import budget.controller.MainMenuController;
-import budget.model.Category;
-import budget.model.Item;
+
+import org.example.controller.MainMenuController;
 
 import java.io.BufferedReader;
 import java.io.File;

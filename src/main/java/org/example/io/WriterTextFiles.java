@@ -1,10 +1,9 @@
-package budget.io;
+package org.example.io;
 
-import budget.controller.MainMenuController;
-import budget.model.Category;
-import budget.model.Item;
+import org.example.controller.MainMenuController;
+import org.example.model.Category;
+import org.example.model.Item;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -18,7 +17,7 @@ public class WriterTextFiles {
 
             for (Map.Entry<Category, LinkedList<Item>> entry : mapItems.entrySet()) {
                 for (Item item : entry.getValue()) {
-                    writer.write(entry.getKey() + "-:-" + item.getName() + "-:-" + item.getPrice() + "\n");
+                    writer.write(entry.getKey() + "-:-" + item.name() + "-:-" + item.price() + "\n");
                 }
             }
 

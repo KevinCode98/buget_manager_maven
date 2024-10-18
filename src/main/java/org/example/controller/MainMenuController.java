@@ -1,15 +1,13 @@
-package budget.controller;
+package org.example.controller;
 
-import budget.io.ConsolePrinter;
-import budget.io.ReaderTextFile;
-import budget.io.WriterTextFiles;
-import budget.model.BudgetManager;
-import budget.model.Category;
-import budget.model.Item;
+import org.example.io.ConsolePrinter;
+import org.example.io.ConsoleScanner;
+import org.example.io.ReaderTextFile;
+import org.example.io.WriterTextFiles;
+import org.example.model.BudgetManager;
+import org.example.model.Category;
 
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.Scanner;
 
 public class MainMenuController implements Runnable {
     public final static String nameFile = "purchases.txt";
@@ -48,70 +46,38 @@ public class MainMenuController implements Runnable {
             4) Back""";
 
 
-    private final Scanner sc;
-    private final ConsolePrinter printer;
     private final BudgetManager manager;
 
-    public MainMenuController(Scanner sc, ConsolePrinter printer) {
-        this.sc = sc;
-        this.printer = printer;
-        this.manager = new BudgetManager(printer, sc);
+    public MainMenuController() {
+        this.manager = new BudgetManager();
     }
 
     @Override
     public void run() {
         mainMenuLoop();
-        printer.printInfoLn("");
-        printer.printInfo("Bye!\n");
-    }
-
-    private String scanValidate(String regex, Runnable invalidAction) {
-        var input = sc.nextLine();
-        while (!input.matches(regex)) {
-            invalidAction.run();
-            input = sc.nextLine();
-        }
-        return input;
     }
 
     private void mainMenuLoop() {
-        Choice choice = getMenuChoice();
-        while (choice != Choice.EXIT) {
+        Choice choice;
+        do {
+            choice = (Choice) getMenu(Choice.class.getName(), MENU, "[0-7]");
+            ConsolePrinter.printInfoLn("");
             getMenuAction(choice).run();
-            printer.printInfoLn("");
-            choice = getMenuChoice();
-        }
+            ConsolePrinter.printInfoLn("");
+        } while (choice != Choice.EXIT);
     }
 
-    private Category getMenuCategory(String menu, String regex) {
-        printer.printInfoLn("");
-        printer.printInfoLn(menu);
-        int menuIndex = Integer.parseInt(scanValidate(regex, () -> {
-            printer.printInfoAndWaitForReturn(sc, "Incorrect option");
-            printer.clearAndPrint(menu);
-        }));
 
-        return Category.values()[menuIndex - 1];
-    }
+    private Enum getMenu(String type, String menu, String regex) {
+        ConsolePrinter.printInfoLn(menu);
+        int menuIndex = Integer.parseInt(ConsoleScanner.insertValue("", regex, "Incorrect option", menu));
 
-    private Sort getMenuSort(String menu, String regex) {
-        printer.printInfoLn("");
-        printer.printInfoLn(menu);
-        int menuIndex = Integer.parseInt(scanValidate(regex, () -> {
-            printer.printInfoAndWaitForReturn(sc, "Incorrect option");
-            printer.clearAndPrint(menu);
-        }));
-
-        return Sort.values()[menuIndex - 1];
-    }
-
-    private Choice getMenuChoice() {
-        printer.printInfoLn(MENU);
-        int menuIndex = Integer.parseInt(scanValidate("[0-7]", () -> {
-            printer.printInfoAndWaitForReturn(sc, "Incorrect option");
-            printer.clearAndPrint(MENU);
-        }));
-        return Choice.values()[menuIndex];
+        if (type.equals(Sort.class.getName()))
+            return Sort.values()[menuIndex - 1];
+        else if (type.equals(Category.class.getName()))
+            return Category.values()[menuIndex - 1];
+        else
+            return Choice.values()[menuIndex];
     }
 
     private Runnable getMenuAction(Choice choice, Object... parameters) {
@@ -122,65 +88,63 @@ public class MainMenuController implements Runnable {
                 Choice.BALANCE, this::balance,
                 Choice.SAVE, this::saveFile,
                 Choice.LOAD, this::loadFile,
-                Choice.SORT, this::sort
+                Choice.SORT, this::sort,
+                Choice.EXIT, this::exit
         ).get(choice);
     }
 
     // Methods in the map
     private void addIncome() {
-        printer.printInfoLn("");
-        printer.printInfoLn("Enter income: ");
-        double income = Double.parseDouble(scanValidate("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?", () ->
-                printer.printInfoLn("Incorrect Input. Try again: ")));
+        double income = Double.parseDouble(ConsoleScanner.insertValue("Enter income:\n",
+                "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?", "Incorrect Input. Try again", ""));
 
-        manager.addToBalance(income);
+        ConsolePrinter.printInfoLn(manager.addToBalance(income));
     }
 
     private void addPurchase() {
-        Category category = getMenuCategory(ADD_PURCHASES, "[1-5]");
+        Category category = (Category) getMenu(Category.class.getName(), ADD_PURCHASES, "[1-5]");
         while (category != Category.ALL) {
-            printer.printInfoLn("");
-            printer.printInfoLn("Enter purchase name: ");
-            String name = sc.nextLine();
-            printer.printInfoLn("Enter its price: ");
-            double price = Double.parseDouble(scanValidate("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?", () ->
-                    printer.printInfoLn("Incorrect Input. Try again: ")));
+            String name = ConsoleScanner.insertValue("Enter purchase name:\n", "", "", "");
 
-            manager.addItem(name, price, category, true);
-            category = getMenuCategory(ADD_PURCHASES, "[1-5]");
+            double price = Double.parseDouble(ConsoleScanner.insertValue("Enter its price:\n",
+                    "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?", "Incorrect Input. Try again", ""));
+
+            ConsolePrinter.printInfoLn(manager.addItem(name, price, category, true));
+            category = (Category) getMenu(Category.class.getName(), ADD_PURCHASES, "[1-5]");
         }
     }
 
     private void showList() {
-        Category category = getMenuCategory(MENU_PURCHASES, "[1-6]");
+        Category category = (Category) getMenu(Category.class.getName(), MENU_PURCHASES, "[1-6]");
         while (category != Category.BACK) {
-            manager.showPurchaseList(category);
-            category = getMenuCategory(MENU_PURCHASES, "[1-6]");
+            ConsolePrinter.printInfoLn(manager.showPurchaseList(category));
+            category = (Category) getMenu(Category.class.getName(), MENU_PURCHASES, "[1-6]");
         }
     }
 
     private void balance() {
-        printer.printInfoLn("");
-        manager.showBalance();
+        ConsolePrinter.printInfoLn(manager.showBalance());
     }
 
     private void saveFile() {
-        printer.printInfoLn("");
         WriterTextFiles.writeInFile(manager.getMapItems(), manager.getBalance());
-        printer.printInfoLn("Purchases were saved!");
+        ConsolePrinter.printInfoLn("Purchases were saved!");
     }
 
     private void loadFile() {
-        printer.printInfoLn("");
         manager.pushItems(ReaderTextFile.readFile());
-        printer.printInfoLn("Purchases were loaded!");
+        ConsolePrinter.printInfoLn("Purchases were loaded!");
     }
 
     private void sort() {
-        Sort sort = getMenuSort(MENU_SORT, "[1-4]");
+        Sort sort = (Sort) getMenu(Sort.class.getName(), MENU_SORT, "[1-4]");
         while (sort != Sort.BACK) {
-            manager.sortList(sort);
-            sort = getMenuSort(MENU_SORT, "[1-4]");
+            ConsolePrinter.printInfoLn(manager.sortList(sort));
+            sort = (Sort) getMenu(Sort.class.getName(), MENU_SORT, "[1-4]");
         }
+    }
+
+    private void exit() {
+        ConsolePrinter.printInfo("Bye!");
     }
 }

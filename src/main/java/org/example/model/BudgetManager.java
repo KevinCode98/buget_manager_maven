@@ -1,29 +1,25 @@
-package budget.model;
+package org.example.model;
 
-import budget.controller.Sort;
-import budget.io.ConsolePrinter;
+import org.example.controller.Sort;
+import org.example.io.ConsoleScanner;
 
 import java.util.*;
 
 public class BudgetManager {
-    private final ConsolePrinter printer;
-    private final Scanner sc;
     private Map<Category, LinkedList<Item>> mapItems;
     private double balance;
     private double total;
 
 
-    public BudgetManager(ConsolePrinter printer, Scanner sc) {
-        this.sc = sc;
-        this.printer = printer;
+    public BudgetManager() {
         this.mapItems = new HashMap<>();
         this.balance = 0;
         this.total = 0;
     }
 
-    public void addToBalance(double income) {
+    public String addToBalance(double income) {
         balance += income;
-        printer.printInfoLn("Income was added!");
+        return "Income was added!";
     }
 
     public Map<Category, LinkedList<Item>> getMapItems() {
@@ -34,11 +30,11 @@ public class BudgetManager {
         return this.balance;
     }
 
-    public void showBalance() {
-        printer.printInfoLn("Balance: $%.2f".formatted(balance));
+    public String showBalance() {
+        return ("Balance: $%.2f".formatted(balance));
     }
 
-    public void addItem(String name, double price, Category category, boolean printMessage) {
+    public String addItem(String name, double price, Category category, boolean printMessage) {
         if (!mapItems.containsKey(category))
             mapItems.put(category, new LinkedList<>());
 
@@ -47,49 +43,57 @@ public class BudgetManager {
         total += price;
 
         if (printMessage)
-            printer.printInfoLn("Purchase was added!");
+            return "Purchase was added!";
+
+        return "";
     }
 
-    public void showPurchaseList(Category category) {
-        printer.printInfoLn("");
+    public String showPurchaseList(Category category) {
+        StringBuilder str = new StringBuilder();
+
         if (category == Category.ALL)
-            showPurchaseList();
+            return showPurchaseList();
         else {
             double totalCategory = 0;
-            printer.printInfoLn("Category: " + category.name());
+            str.append("Category: ").append(category.name());
 
             if (!mapItems.containsKey(category)) {
-                printer.printInfoLn("The purchase list is empty");
+                str.append("The purchase list is empty");
             } else {
                 for (Item item : mapItems.get(category)) {
-                    printer.printInfoLn("%s $%.2f".formatted(item.getName(), item.getPrice()));
-                    totalCategory += item.getPrice();
+                    str.append("%s $%.2f".formatted(item.name(), item.price()));
+                    totalCategory += item.price();
                 }
-                printer.printInfoLn("Total sum: $%.2f".formatted(totalCategory));
+                str.append("Total sum: $%.2f".formatted(totalCategory));
             }
         }
+
+        return str.toString();
     }
 
-    private void showPurchaseList() {
+    private String showPurchaseList() {
         double totalCategory = 0;
-        printer.printInfoLn("All: ");
+        StringBuilder str = new StringBuilder();
+        str.append("All: ");
 
         if (mapItems.isEmpty()) {
-            printer.printInfoLn("The purchase list is empty");
+            str.append("The purchase list is empty");
         } else {
             for (Category category : Category.values()) {
                 if (mapItems.containsKey(category)) {
                     for (Item item : mapItems.get(category)) {
-                        printer.printInfoLn("%s $%.2f".formatted(item.getName(), item.getPrice()));
-                        totalCategory += item.getPrice();
+                        str.append("%s $%.2f".formatted(item.name(), item.price()));
+                        totalCategory += item.price();
                     }
                 }
             }
-            printer.printInfoLn("Total sum: $%.2f".formatted(totalCategory));
+            str.append("Total sum: $%.2f".formatted(totalCategory));
         }
+
+        return str.toString();
     }
 
-    public void pushItems(String list) {
+    public boolean pushItems(String list) {
         if (!list.isEmpty()) {
             String[] result = list.split("\n");
             for (int i = 1; i < result.length; i++) {
@@ -102,60 +106,51 @@ public class BudgetManager {
                     balance = Double.parseDouble(result[0]);
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input: The string does not contain a valid double.");
+                return false;
             }
         }
+
+        return true;
     }
 
-    public void sortList(Sort sort) {
-        printer.printInfoLn("");
+    public String sortList(Sort sort) {
+        String result = "";
         switch (sort) {
-            case ALL -> sortList();
-            case TYPE -> System.out.println(getMenuTotalCategories());
-            case CERTAIN -> menuCertain();
+            case ALL -> {
+                result = sortList();
+            }
+            case TYPE -> {
+                result = getMenuTotalCategories();
+            }
+            case CERTAIN -> {
+                result = menuCertain();
+            }
         }
+
+        return result;
     }
 
-    private void menuCertain() {
+    private String menuCertain() {
         String MENU = """
                 Choose the type of purchase
                 1) Food
                 2) Clothes
                 3) Entertainment
-                4) Other""";
+                4) Other
+                """;
 
-        Category category = getMenuCategory(MENU, "[1-4]");
-        getListSortedByCategory(category);
+        int menuIndex = Integer.parseInt(ConsoleScanner.insertValue(MENU, "[1-4]", "Incorrect option", ""));
+        return (getListSortedByCategory(Category.values()[menuIndex - 1]));
     }
 
-    private Category getMenuCategory(String menu, String regex) {
-        printer.printInfoLn(menu);
-        int menuIndex = Integer.parseInt(scanValidate(regex, () -> {
-            printer.printInfoAndWaitForReturn(sc, "Incorrect option");
-            printer.clearAndPrint(menu);
-        }));
-
-        return Category.values()[menuIndex - 1];
-    }
-
-    private String scanValidate(String regex, Runnable invalidAction) {
-        var input = sc.nextLine();
-        while (!input.matches(regex)) {
-            invalidAction.run();
-            input = sc.nextLine();
-        }
-        return input;
-    }
-
-    private void sortList() {
-        if (mapItems.isEmpty()) {
-            printer.printInfoLn("The purchase list is empty!");
-            return;
-        }
+    private String sortList() {
+        if (mapItems.isEmpty())
+            return "The purchase list is empty!";
 
         PriorityQueue<Item> myQueue = new PriorityQueue<>(new Comparator<Item>() {
             @Override
             public int compare(Item item1, Item item2) {
-                return Double.compare(item2.getPrice(), item1.getPrice());
+                return Double.compare(item2.price(), item1.price());
             }
         });
 
@@ -164,10 +159,14 @@ public class BudgetManager {
                 myQueue.addAll(mapItems.get(category));
             }
         }
+
+        StringBuilder str = new StringBuilder();
         while (!myQueue.isEmpty()) {
             Item item = myQueue.poll();
-            System.out.println(item.getName() + " $%.2f".formatted(item.getPrice()));
+            str.append(item.name()).append(" $%.2f".formatted(item.price())).append('\n');
         }
+
+        return str.toString();
     }
 
 
@@ -177,7 +176,7 @@ public class BudgetManager {
 
         double totalCategory = 0;
         for (Item item : mapItems.get(category))
-            totalCategory += item.getPrice();
+            totalCategory += item.price();
 
         return totalCategory;
     }
@@ -197,7 +196,8 @@ public class BudgetManager {
 
             String name = category.name();
 
-            myQueue.add(new Pair(name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase(), getTotalCategory(category)));
+            myQueue.add(new Pair(name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase(),
+                    getTotalCategory(category)));
         }
 
         StringBuilder result = new StringBuilder("Types:\n");
@@ -210,29 +210,26 @@ public class BudgetManager {
         return result.toString();
     }
 
-    private void getListSortedByCategory(Category category) {
-        printer.printInfoLn("");
-
-        if (!mapItems.containsKey(category)) {
-            printer.printInfoLn("The purchase list is empty!");
-            return;
-        }
+    private String getListSortedByCategory(Category category) {
+        if (!mapItems.containsKey(category))
+            return "The purchase list is empty!";
 
 
         PriorityQueue<Item> myQueue = new PriorityQueue<>(new Comparator<Item>() {
             @Override
             public int compare(Item pair1, Item pair2) {
-                return Double.compare(pair2.getPrice(), pair1.getPrice());
+                return Double.compare(pair2.price(), pair1.price());
             }
         });
 
-        for (Item item : mapItems.get(category)) {
-            myQueue.add(item);
-        }
+        StringBuilder str = new StringBuilder();
+        myQueue.addAll(mapItems.get(category));
 
         while (!myQueue.isEmpty()) {
             Item item = myQueue.poll();
-            System.out.println(item.getName() + " $%.2f".formatted(item.getPrice()));
+            str.append(item.name()).append(" $%.2f".formatted(item.price())).append('\n');
         }
+
+        return str.toString();
     }
 }

@@ -1,4 +1,4 @@
-package budget.model;
+package org.example.model;
 
 public enum Category {
     FOOD, CLOTHES, ENTERTAINMENT, OTHER, ALL, BACK

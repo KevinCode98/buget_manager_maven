@@ -1,12 +1,9 @@
-package budget;
+package org.example;
 
-import budget.controller.MainMenuController;
-import budget.io.ConsolePrinter;
-
-import java.util.Scanner;
+import org.example.controller.MainMenuController;
 
 public class Main {
     public static void main(String[] args) {
-        new MainMenuController(new Scanner(System.in), new ConsolePrinter()).run();
+        new MainMenuController().run();
     }
 }
