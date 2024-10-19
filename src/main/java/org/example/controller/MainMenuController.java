@@ -8,6 +8,7 @@ import org.example.model.BudgetManager;
 import org.example.model.Category;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class MainMenuController implements Runnable {
     public final static String nameFile = "purchases.txt";
@@ -132,8 +133,8 @@ public class MainMenuController implements Runnable {
     }
 
     private void loadFile() {
-        manager.pushItems(ReaderTextFile.readFile());
-        ConsolePrinter.printInfoLn("Purchases were loaded!");
+        String result = manager.pushItems(ReaderTextFile.readFile());
+        ConsolePrinter.printInfoLn(Objects.requireNonNullElse(result, "Purchases were loaded!"));
     }
 
     private void sort() {
@@ -141,6 +142,7 @@ public class MainMenuController implements Runnable {
         while (sort != Sort.BACK) {
             ConsolePrinter.printInfoLn(manager.sortList(sort));
             sort = (Sort) getMenu(Sort.class.getName(), MENU_SORT, "[1-4]");
+            ConsolePrinter.printInfoLn("");
         }
     }
 

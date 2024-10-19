@@ -4,16 +4,15 @@ import java.util.Scanner;
 
 public class ConsoleScanner {
     public final static Scanner sc = new Scanner(System.in);
-    public final static ConsolePrinter printer = new ConsolePrinter();
 
     public static String insertValue(String message, String regex, String error, String menu) {
-        printer.printInfo(message);
+        ConsolePrinter.printInfo(message);
         if (regex.isEmpty())
             return sc.nextLine();
 
         return (scanValidate(regex, () -> {
-            printer.printInfoAndWaitForReturn(sc, error);
-            printer.printInfoLn(menu);
+            ConsolePrinter.printInfoAndWaitForReturn(error);
+            ConsolePrinter.printInfoLn(menu);
         }));
     }
 

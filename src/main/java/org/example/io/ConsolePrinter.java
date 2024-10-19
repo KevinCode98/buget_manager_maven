@@ -11,8 +11,8 @@ public class ConsolePrinter {
         System.out.println(message);
     }
 
-    public static void printInfoAndWaitForReturn(Scanner sc, String message) {
+    public static void printInfoAndWaitForReturn(String message) {
         System.out.print(message);
-        sc.nextLine();
+        ConsoleScanner.insertValue("", "", "", "");
     }
 }

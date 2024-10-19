@@ -1,4 +1,7 @@
-452.03
-CLOTHES-:-Shooes-:-25.99
-FOOD-:-Milk-:-8.99
-FOOD-:-Ice Cream-:-12.99
+619.0
+FOOD-:-Milk-:-10.0
+FOOD-:-Pizza-:-20.0
+CLOTHES-:-T-shirt-:-25.0
+OTHER-:-Glasses-:-50.0
+ENTERTAINMENT-:-Movie-:-15.0
+ENTERTAINMENT-:-Tv-:-499.0

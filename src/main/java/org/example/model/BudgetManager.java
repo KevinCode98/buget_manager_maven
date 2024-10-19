@@ -6,7 +6,7 @@ import org.example.io.ConsoleScanner;
 import java.util.*;
 
 public class BudgetManager {
-    private Map<Category, LinkedList<Item>> mapItems;
+    private final Map<Category, LinkedList<Item>> mapItems;
     private double balance;
     private double total;
 
@@ -34,6 +34,10 @@ public class BudgetManager {
         return ("Balance: $%.2f".formatted(balance));
     }
 
+    public void deleteItems(){
+        mapItems.clear();
+    }
+
     public String addItem(String name, double price, Category category, boolean printMessage) {
         if (!mapItems.containsKey(category))
             mapItems.put(category, new LinkedList<>());
@@ -55,16 +59,16 @@ public class BudgetManager {
             return showPurchaseList();
         else {
             double totalCategory = 0;
-            str.append("Category: ").append(category.name());
+            str.append("Category: ").append(category.name()).append('\n');
 
             if (!mapItems.containsKey(category)) {
-                str.append("The purchase list is empty");
+                str.append("The purchase list is empty").append('\n');
             } else {
                 for (Item item : mapItems.get(category)) {
-                    str.append("%s $%.2f".formatted(item.name(), item.price()));
+                    str.append("%s $%.2f".formatted(item.name(), item.price())).append('\n');
                     totalCategory += item.price();
                 }
-                str.append("Total sum: $%.2f".formatted(totalCategory));
+                str.append("Total sum: $%.2f".formatted(totalCategory)).append('\n');
             }
         }
 
@@ -74,26 +78,26 @@ public class BudgetManager {
     private String showPurchaseList() {
         double totalCategory = 0;
         StringBuilder str = new StringBuilder();
-        str.append("All: ");
+        str.append("All: ").append('\n');
 
         if (mapItems.isEmpty()) {
-            str.append("The purchase list is empty");
+            str.append("The purchase list is empty").append('\n');
         } else {
             for (Category category : Category.values()) {
                 if (mapItems.containsKey(category)) {
                     for (Item item : mapItems.get(category)) {
-                        str.append("%s $%.2f".formatted(item.name(), item.price()));
+                        str.append("%s $%.2f".formatted(item.name(), item.price())).append('\n');
                         totalCategory += item.price();
                     }
                 }
             }
-            str.append("Total sum: $%.2f".formatted(totalCategory));
+            str.append("Total sum: $%.2f".formatted(totalCategory)).append('\n');
         }
 
         return str.toString();
     }
 
-    public boolean pushItems(String list) {
+    public String pushItems(String list) {
         if (!list.isEmpty()) {
             String[] result = list.split("\n");
             for (int i = 1; i < result.length; i++) {
@@ -105,26 +109,19 @@ public class BudgetManager {
                 if (!result[0].isEmpty())
                     balance = Double.parseDouble(result[0]);
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input: The string does not contain a valid double.");
-                return false;
+                return "Invalid input: The string does not contain a valid double.";
             }
         }
 
-        return true;
+        return null;
     }
 
     public String sortList(Sort sort) {
         String result = "";
         switch (sort) {
-            case ALL -> {
-                result = sortList();
-            }
-            case TYPE -> {
-                result = getMenuTotalCategories();
-            }
-            case CERTAIN -> {
-                result = menuCertain();
-            }
+            case ALL -> result = sortList();
+            case TYPE -> result = getMenuTotalCategories();
+            case CERTAIN -> result = menuCertain();
         }
 
         return result;
@@ -195,7 +192,6 @@ public class BudgetManager {
                 continue;
 
             String name = category.name();
-
             myQueue.add(new Pair(name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase(),
                     getTotalCategory(category)));
         }
@@ -210,7 +206,7 @@ public class BudgetManager {
         return result.toString();
     }
 
-    private String getListSortedByCategory(Category category) {
+    public String getListSortedByCategory(Category category) {
         if (!mapItems.containsKey(category))
             return "The purchase list is empty!";
 
