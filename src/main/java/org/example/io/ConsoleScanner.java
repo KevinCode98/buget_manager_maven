@@ -3,7 +3,7 @@ package org.example.io;
 import java.util.Scanner;
 
 public class ConsoleScanner {
-    public final static Scanner sc = new Scanner(System.in);
+    public static Scanner sc = new Scanner(System.in);
 
     public static String insertValue(String message, String regex, String error, String menu) {
         ConsolePrinter.printInfo(message);
